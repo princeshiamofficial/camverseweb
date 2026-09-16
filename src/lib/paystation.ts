@@ -43,9 +43,9 @@ const LIVE_BASE_URL = "https://api.paystation.com.bd";
 
 export function getPayStationConfig(): PayStationConfig {
   return {
-    merchantId: process.env.PAYSTATION_MERCHANT_ID || "",
-    password: process.env.PAYSTATION_PASSWORD || "",
-    env: (process.env.PAYSTATION_ENV as "sandbox" | "live") || "sandbox",
+    merchantId: process.env.PAYSTATION_MERCHANT_ID || "6489-1789449727",
+    password: process.env.PAYSTATION_PASSWORD || "rdes@dgFR4gd",
+    env: (process.env.PAYSTATION_ENV as "sandbox" | "live") || "live",
   };
 }
 
