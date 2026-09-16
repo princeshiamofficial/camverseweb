@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 1280 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e1b4b"/>
+      <stop offset="0.55" stop-color="#0f172a"/>
+      <stop offset="1" stop-color="#312e81"/>
+    </linearGradient>
+    <pattern id="dots" width="28" height="28" patternUnits="userSpaceOnUse">
+      <circle cx="1.5" cy="1.5" r="1.5" fill="rgba(255,255,255,0.09)"/>
+    </pattern>
+  </defs>
+  <rect width="1280" height="720" fill="url(#bg)"/>
+  <rect width="1280" height="720" fill="url(#dots)"/>
+  <circle cx="640" cy="330" r="86" fill="#ffffff"/>
+  <path d="M612 288l82 42-82 42z" fill="#4f46e5"/>
+  <text x="640" y="472" text-anchor="middle" font-family="Arial, sans-serif" font-size="44" font-weight="700" fill="#ffffff">CamVerse Demo</text>
+  <text x="640" y="516" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" fill="#a5b4fc">Record → Teleprompter → Subtitle → Brand → Publish</text>
+</svg>
