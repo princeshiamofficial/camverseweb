@@ -37,7 +37,13 @@ function LoginForm() {
     setError(null);
     setSuccess(null);
 
-    if (isDisposableByPattern(email)) {
+    const cleanEmail = email.trim().toLowerCase();
+    if (!cleanEmail) {
+      setError("Please enter your email address.");
+      return;
+    }
+
+    if (isDisposableByPattern(cleanEmail)) {
       setError(DISPOSABLE_EMAIL_ERROR_MESSAGE);
       return;
     }
@@ -46,14 +52,26 @@ function LoginForm() {
 
     try {
       const { data, error: authError } = await supabase.auth.signInWithPassword({
-        email,
+        email: cleanEmail,
         password,
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        if (authError.message.toLowerCase().includes("invalid login credentials")) {
+          throw new Error(
+            "ভুল ইমেইল বা পাসওয়ার্ড। এই ইমেইলে যদি পূর্বে একাউন্ট তৈরি না করে থাকেন, তবে নিচে 'Create Free Account' এ ক্লিক করে একাউন্ট খুলে নিন।"
+          );
+        }
+        if (authError.message.toLowerCase().includes("email not confirmed")) {
+          throw new Error(
+            "আপনার ইমেইলটি এখনো ভেরিফাই করা হয়নি। অনুগ্রহ করে ইনবক্স চেক করে কনফার্ম করুন অথবা Supabase থেকে Confirm Email নিষ্ক্রিয় করুন।"
+          );
+        }
+        throw authError;
+      }
 
       if (data.session) {
-        setSuccess("Login successful! Redirecting...");
+        setSuccess("লগইন সফল হয়েছে! রিডাইরেক্ট করা হচ্ছে...");
         setTimeout(() => {
           if (redirectTarget === "checkout") {
             router.push(`/?checkout=true&plan=${plan}&period=${period}${coupon ? `&coupon=${coupon}` : ""}`);
@@ -61,6 +79,10 @@ function LoginForm() {
             router.push("/dashboard");
           }
         }, 600);
+      } else {
+        setError(
+          "লগইন সেশন শুরু করা যায়নি। ইমেইল ভেরিফিকেশন বাকি থাকতে পারে, অনুগ্রহ করে ইনবক্স চেক করুন।"
+        );
       }
     } catch (err: unknown) {
       const message =
