@@ -22,16 +22,8 @@ const inter = Inter({
   display: "swap",
 });
 
-function getMetadataBase(): URL {
-  try {
-    return new URL(SITE.url);
-  } catch {
-    return new URL("https://camverse.app");
-  }
-}
-
 export const metadata: Metadata = {
-  metadataBase: getMetadataBase(),
+  metadataBase: new URL("https://camverse.app"),
   title: {
     default: SITE.title,
     template: `%s — ${SITE.name}`,
