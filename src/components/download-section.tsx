@@ -149,7 +149,7 @@ export function DownloadSection() {
             </div>
           </div>
 
-          {/* Primary Download Action Button */}
+          {/* Primary & Portable Download Action Buttons */}
           <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3 sm:gap-4">
             <a
               href={active.downloadUrl}
@@ -159,10 +159,36 @@ export function DownloadSection() {
               <Icon name="download" size={19} />
               <span>Direct Download for {active.name} ({active.size})</span>
             </a>
+
+            {active.id === "windows" && (
+              <a
+                href="/api/download?platform=portable"
+                onClick={() => track("app_download_click", { platform: "windows-portable", version: active.version })}
+                className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm text-slate-300 bg-slate-800/90 hover:bg-slate-750 border border-slate-700 hover:border-slate-600 transition-all hover:text-white"
+                title="No installation needed - Extract and run directly"
+              >
+                <Icon name="extension" size={16} className="text-indigo-400" />
+                <span>Portable (.zip)</span>
+              </a>
+            )}
           </div>
 
+          {/* Windows SmartScreen Quick Tip Banner */}
+          {active.id === "windows" && (
+            <div className="mt-5 rounded-2xl border border-indigo-500/20 bg-indigo-950/40 p-3.5 sm:p-4 text-left backdrop-blur-md">
+              <div className="flex items-start gap-3">
+                <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-indigo-500/20 text-indigo-400 text-xs font-bold">
+                  i
+                </div>
+                <div className="text-xs text-slate-300 leading-relaxed">
+                  <span className="font-semibold text-white">First-time Windows Installation:</span> If Windows Defender SmartScreen shows a protection prompt, simply click <span className="text-indigo-300 font-semibold underline underline-offset-2">More info</span> &rarr; <span className="text-emerald-400 font-semibold underline underline-offset-2">Run anyway</span>. CamVerse is 100% verified, clean, and adware-free.
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* System Requirements */}
-          <div className="mt-5 flex items-center justify-center gap-2 text-xs text-slate-400">
+          <div className="mt-4 flex items-center justify-center gap-2 text-xs text-slate-400">
             <Icon name="check" size={14} className="text-emerald-400 shrink-0" />
             <span className="text-left sm:text-center">Requirements: {active.requirements}</span>
           </div>

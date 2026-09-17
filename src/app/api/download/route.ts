@@ -13,6 +13,9 @@ export async function GET(request: Request) {
   const filenameMap: Record<string, string> = {
     windows: "CamVerse-Setup.exe",
     win: "CamVerse-Setup.exe",
+    portable: "CamVerse-Windows-Portable.zip",
+    zip: "CamVerse-Windows-Portable.zip",
+    "windows-zip": "CamVerse-Windows-Portable.zip",
     mac: "CamVerse-Setup.dmg",
     darwin: "CamVerse-Setup.dmg",
     linux: "CamVerse-Setup.AppImage",
