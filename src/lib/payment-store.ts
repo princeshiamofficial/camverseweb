@@ -53,6 +53,7 @@ export interface UserLicense {
   createdAt: number;
   activationLimit: number;
   activationUsage: number;
+  expiresAt?: string | null;
 }
 
 interface StoreShape {
@@ -218,3 +219,62 @@ export function expiryFor(period: BillingPeriod, from = new Date()): Date {
 
 export const planLabel = (planId: PlanId) => PLANS[planId].name;
 export const couponCode = LAUNCH_COUPON.code;
+
+/* ------------------------------------------------------------------ */
+/* Admin Management Helpers                                           */
+/* ------------------------------------------------------------------ */
+export function getAllSessions(): CheckoutSession[] {
+  return Array.from(store.sessions.values()).sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export function getAllStoreLicenses(): UserLicense[] {
+  const all: UserLicense[] = [];
+  for (const list of store.licenses.values()) {
+    all.push(...list);
+  }
+  return all.sort((a, b) => b.createdAt - a.createdAt);
+}
+
+export function createAdminStoreLicense(input: {
+  email: string;
+  fullName?: string;
+  planTier?: string;
+  activationLimit?: number;
+  expiresAt?: string | null;
+}): UserLicense {
+  const email = input.email.trim().toLowerCase();
+  const licenseKey = generateLicenseKey((input.planTier as PlanId) || "pro");
+  const license: UserLicense = {
+    id: `store-lic-${Date.now()}-${Math.random().toString(36).substring(2, 6)}`,
+    licenseKey,
+    planTier: (input.planTier as PlanId) || "pro",
+    status: "active",
+    customerEmail: email,
+    customerName: input.fullName?.trim() || "Valued Creator",
+    createdAt: Date.now(),
+    activationLimit: input.activationLimit || 2,
+    activationUsage: 0,
+    expiresAt: input.expiresAt || null,
+  };
+
+  const list = store.licenses.get(email) || [];
+  list.unshift(license);
+  store.licenses.set(email, list);
+  return license;
+}
+
+export function updateAdminStoreLicense(
+  licenseKey: string,
+  updates: Partial<Pick<UserLicense, "status" | "activationLimit" | "expiresAt">>
+): UserLicense | null {
+  for (const list of store.licenses.values()) {
+    const found = list.find((l) => l.licenseKey === licenseKey);
+    if (found) {
+      if (updates.status !== undefined) found.status = updates.status;
+      if (updates.activationLimit !== undefined) found.activationLimit = updates.activationLimit;
+      if (updates.expiresAt !== undefined) found.expiresAt = updates.expiresAt;
+      return found;
+    }
+  }
+  return null;
+}

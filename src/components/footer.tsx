@@ -43,8 +43,16 @@ export function Footer() {
           ))}
         </div>
 
-        <div className="mt-12 border-t border-slate-200 pt-6 text-sm text-slate-500">
-          © 2026 CamVerse. All rights reserved.
+        <div className="mt-12 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-200 pt-6 text-sm text-slate-500">
+          <div>© 2026 CamVerse. All rights reserved.</div>
+          <div className="flex items-center gap-4 text-xs">
+            <a
+              href="/admin"
+              className="text-slate-400 hover:text-slate-700 transition-colors flex items-center gap-1"
+            >
+              <span>Admin Portal</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>

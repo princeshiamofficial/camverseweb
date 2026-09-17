@@ -35,6 +35,8 @@ export const env = {
   emailProvider: (process.env.EMAIL_PROVIDER ?? "console") as
     | "console"
     | "smtp",
+  adminSessionSecret:
+    process.env.ADMIN_SESSION_SECRET ?? "camverse-admin-session-secret-2026-secure-token",
 } as const;
 
 export function isProd(): boolean {

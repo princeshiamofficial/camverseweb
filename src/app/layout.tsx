@@ -67,15 +67,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { TrackingScripts } from "@/components/tracking-scripts";
+
 export default function RootLayout({
   children,
 }: Readonly<{ children: React.ReactNode }>) {
   return (
     <html
       lang="bn"
+      suppressHydrationWarning
       className={`${notoBengali.variable} ${hindSiliguri.variable} ${inter.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
+        <TrackingScripts />
+        {children}
+      </body>
     </html>
   );
 }
