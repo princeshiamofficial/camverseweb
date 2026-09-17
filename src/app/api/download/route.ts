@@ -1,36 +1,56 @@
 import { NextResponse } from "next/server";
+import fs from "fs";
+import path from "path";
+import { getLiveDownloadUrl } from "@/lib/download-store";
 
-const GITHUB_REPO = "princeshiamofficial/Recordly";
-const LATEST_VERSION = "v1.3.5-beta.2";
-
-export const HEAD = GET;
+export const dynamic = "force-dynamic";
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const platform = (searchParams.get("platform") || "windows").toLowerCase();
 
-  if (platform === "windows" || platform === "win") {
-    return NextResponse.redirect(
-      `https://github.com/${GITHUB_REPO}/releases/download/${LATEST_VERSION}/CamVerse-windows-x64.exe`,
-      { status: 302 }
-    );
+  // 1. Check if a direct file exists locally in public/downloads
+  const filenameMap: Record<string, string> = {
+    windows: "CamVerse-Setup.exe",
+    win: "CamVerse-Setup.exe",
+    mac: "CamVerse-Setup.dmg",
+    darwin: "CamVerse-Setup.dmg",
+    linux: "CamVerse-Setup.AppImage",
+  };
+
+  const directFilename = filenameMap[platform] || "CamVerse-Setup.exe";
+  const localFilePath = path.join(process.cwd(), "public", "downloads", directFilename);
+
+  if (fs.existsSync(localFilePath)) {
+    try {
+      const fileBuffer = fs.readFileSync(localFilePath);
+      return new NextResponse(fileBuffer, {
+        status: 200,
+        headers: {
+          "Content-Type": "application/octet-stream",
+          "Content-Disposition": `attachment; filename="${directFilename}"`,
+          "Cache-Control": "public, max-age=3600",
+        },
+      });
+    } catch (err) {
+      console.error("[download-route] Error reading local file:", err);
+    }
   }
 
-  if (platform === "mac" || platform === "darwin") {
-    return NextResponse.redirect(
-      `https://github.com/${GITHUB_REPO}/releases/download/${LATEST_VERSION}/CamVerse-mac-universal.dmg`,
-      { status: 302 }
-    );
+  // 2. Fetch configured live direct download link
+  const directUrl = await getLiveDownloadUrl(platform);
+
+  if (directUrl && directUrl.startsWith("http")) {
+    return NextResponse.redirect(directUrl, {
+      status: 302,
+    });
   }
 
-  if (platform === "linux") {
-    return NextResponse.redirect(
-      `https://github.com/${GITHUB_REPO}/releases/download/${LATEST_VERSION}/CamVerse-linux-x86_64.AppImage`,
-      { status: 302 }
-    );
-  }
-
-  return NextResponse.redirect(`https://github.com/${GITHUB_REPO}/releases`, {
-    status: 302,
-  });
+  // 3. Fallback direct download
+  return NextResponse.redirect(
+    "https://github.com/princeshiamofficial/Recordly/releases/latest/download/CamVerse-windows-x64.exe",
+    { status: 302 }
+  );
 }
+
+export const HEAD = GET;

@@ -31,7 +31,7 @@ interface OrderSession {
   createdAt: number;
 }
 
-type AdminTab = "overview" | "licenses" | "orders" | "tracking" | "settings";
+type AdminTab = "overview" | "licenses" | "orders" | "tracking" | "downloads" | "settings";
 
 export default function AdminPage() {
   // Auth state
@@ -60,6 +60,13 @@ export default function AdminPage() {
   const [fbPixelId, setFbPixelId] = useState("");
   const [fbPixelEnabled, setFbPixelEnabled] = useState(false);
   const [trackingSaving, setTrackingSaving] = useState(false);
+
+  // Software Downloads state (Direct file links)
+  const [downloadWindowsUrl, setDownloadWindowsUrl] = useState("");
+  const [downloadMacUrl, setDownloadMacUrl] = useState("");
+  const [downloadLinuxUrl, setDownloadLinuxUrl] = useState("");
+  const [downloadVersion, setDownloadVersion] = useState("1.3.5");
+  const [downloadSaving, setDownloadSaving] = useState(false);
 
   // Filter & Search
   const [searchQuery, setSearchQuery] = useState("");
@@ -123,6 +130,24 @@ export default function AdminPage() {
     }
   }, []);
 
+  // Fetch software download URLs
+  const loadDownloadsData = useCallback(async () => {
+    try {
+      const res = await fetch("/api/admin/downloads");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.ok && data.config) {
+          setDownloadWindowsUrl(data.config.windowsUrl || "");
+          setDownloadMacUrl(data.config.macUrl || "");
+          setDownloadLinuxUrl(data.config.linuxUrl || "");
+          setDownloadVersion(data.config.version || "1.3.5");
+        }
+      }
+    } catch (err) {
+      console.warn("Failed to load download config:", err);
+    }
+  }, []);
+
   // Fetch licenses and orders
   const loadDashboardData = useCallback(async () => {
     setDataLoading(true);
@@ -146,13 +171,50 @@ export default function AdminPage() {
         }
       }
 
-      await loadTrackingData();
+      await Promise.all([loadTrackingData(), loadDownloadsData()]);
     } catch (err) {
       console.error("Failed to load admin data:", err);
     } finally {
       setDataLoading(false);
     }
-  }, [loadTrackingData]);
+  }, [loadTrackingData, loadDownloadsData]);
+
+  // Save Direct Software Download Links
+  const handleSaveDownloads = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setDownloadSaving(true);
+    setFeedback(null);
+
+    try {
+      const res = await fetch("/api/admin/downloads", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          windowsUrl: downloadWindowsUrl.trim(),
+          macUrl: downloadMacUrl.trim(),
+          linuxUrl: downloadLinuxUrl.trim(),
+          version: downloadVersion.trim(),
+        }),
+      });
+
+      const data = await res.json();
+      if (res.ok && data.ok) {
+        setFeedback({
+          type: "success",
+          text: "Direct software download URLs updated and mirrored to releases table successfully!",
+        });
+      } else {
+        setFeedback({
+          type: "error",
+          text: data.error || "Failed to update download URLs.",
+        });
+      }
+    } catch {
+      setFeedback({ type: "error", text: "Connection error while saving download settings." });
+    } finally {
+      setDownloadSaving(false);
+    }
+  };
 
   // Save Tracking Settings
   const handleSaveTracking = async (e: React.FormEvent) => {
@@ -685,6 +747,32 @@ export default function AdminPage() {
               {(fbPixelEnabled || gtmEnabled) && (
                 <span className="h-2 w-2 rounded-full bg-emerald-500" title="Tracking is active" />
               )}
+            </button>
+
+            <button
+              onClick={() => {
+                setActiveTab("downloads");
+                setSidebarOpen(false);
+              }}
+              className={`w-full flex items-center justify-between rounded-xl px-3.5 py-2.5 text-xs font-semibold transition-all cursor-pointer ${
+                activeTab === "downloads"
+                  ? "bg-slate-900 text-white shadow-sm"
+                  : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <Icon name="download" size={16} />
+                <span>Software Builds</span>
+              </div>
+              <span
+                className={`rounded-full px-2 py-0.5 text-[10px] font-mono font-bold ${
+                  activeTab === "downloads"
+                    ? "bg-white/20 text-white"
+                    : "bg-indigo-50 text-indigo-700"
+                }`}
+              >
+                v{downloadVersion}
+              </span>
             </button>
 
             <button
@@ -1555,7 +1643,147 @@ export default function AdminPage() {
           )}
 
           {/* ─────────────────────────────────────────────────────────
-              SECTION 5: SYSTEM & KEYS CONFIGURATION TAB
+              SECTION 5: SOFTWARE BUILDS & DIRECT DOWNLOADS TAB
+             ───────────────────────────────────────────────────────── */}
+          {activeTab === "downloads" && (
+            <form onSubmit={handleSaveDownloads} className="space-y-6">
+              <div className="grid gap-6 md:grid-cols-2">
+                {/* Windows Direct Installer Link */}
+                <div className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-4 shadow-sm">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 border border-indigo-100/80 text-indigo-600 shadow-2xs">
+                        <Icon name="monitor" size={18} />
+                      </div>
+                      <div>
+                        <h3 className="font-display font-bold text-base text-slate-900">
+                          Windows Installer (Direct Link)
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          64-bit Windows Executable (.exe)
+                        </p>
+                      </div>
+                    </div>
+                    <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-bold text-emerald-700">
+                      Primary
+                    </span>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Windows Direct File / Storage URL
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://.../CamVerse-windows-x64.exe or Google Drive Direct Link"
+                      value={downloadWindowsUrl}
+                      onChange={(e) => setDownloadWindowsUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-mono"
+                    />
+                    <p className="mt-1.5 text-[11px] text-slate-400 leading-relaxed">
+                      Visitors clicking &quot;Download for Windows&quot; will immediately download this binary without seeing GitHub.
+                    </p>
+                  </div>
+
+                  <div className="rounded-2xl border border-slate-100 bg-slate-50 p-4 text-xs space-y-1.5">
+                    <span className="font-semibold text-slate-800 block text-[11px] uppercase tracking-wider">
+                      Direct Storage Options:
+                    </span>
+                    <ul className="list-disc pl-4 space-y-1 text-[11px] text-slate-600">
+                      <li><strong>Supabase Storage:</strong> Upload to bucket <code>releases</code> and paste public URL.</li>
+                      <li><strong>Cloudflare R2 / S3 / Mediafire / Drive:</strong> Paste direct binary link.</li>
+                      <li><strong>Local Server:</strong> Place file in <code>website/public/downloads/CamVerse-Setup.exe</code>.</li>
+                    </ul>
+                  </div>
+                </div>
+
+                {/* macOS & Linux & Versioning */}
+                <div className="rounded-3xl border border-slate-200/80 bg-white p-6 space-y-4 shadow-sm">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700 shadow-2xs">
+                      <Icon name="download" size={18} />
+                    </div>
+                    <div>
+                      <h3 className="font-display font-bold text-base text-slate-900">
+                        macOS & Linux & Version
+                      </h3>
+                      <p className="text-xs text-slate-500">
+                        Cross-platform packages & software version
+                      </p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Release Version Tag
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="1.3.5"
+                      value={downloadVersion}
+                      onChange={(e) => setDownloadVersion(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      macOS Universal Package (.dmg)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://.../CamVerse-mac-universal.dmg"
+                      value={downloadMacUrl}
+                      onChange={(e) => setDownloadMacUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-mono"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                      Linux Binary (.AppImage / .deb)
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="https://.../CamVerse-linux-x86_64.AppImage"
+                      value={downloadLinuxUrl}
+                      onChange={(e) => setDownloadLinuxUrl(e.target.value)}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-xs text-slate-900 placeholder-slate-400 outline-none focus:border-indigo-600 focus:ring-1 focus:ring-indigo-600 font-mono"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Bar */}
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-4 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-sm">
+                <div className="text-xs text-slate-500">
+                  Direct downloads are served directly via <code>/api/download?platform=windows</code> without navigating to GitHub.
+                </div>
+
+                <div className="flex items-center gap-3 w-full sm:w-auto">
+                  <a
+                    href="/api/download?platform=windows"
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1 sm:flex-none rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition text-center"
+                  >
+                    Test Download Link ↗
+                  </a>
+
+                  <button
+                    type="submit"
+                    disabled={downloadSaving}
+                    className="flex-1 sm:flex-none rounded-xl bg-slate-900 px-6 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-slate-800 transition disabled:opacity-50 cursor-pointer"
+                  >
+                    {downloadSaving ? "Saving..." : "Save Download URLs"}
+                  </button>
+                </div>
+              </div>
+            </form>
+          )}
+
+          {/* ─────────────────────────────────────────────────────────
+              SECTION 6: SYSTEM & KEYS CONFIGURATION TAB
              ───────────────────────────────────────────────────────── */}
           {activeTab === "settings" && (
             <div className="grid gap-6 md:grid-cols-2">

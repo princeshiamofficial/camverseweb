@@ -39,7 +39,7 @@ const PLATFORMS: PlatformInfo[] = [
     size: "198 MB",
     downloadUrl: "/api/download?platform=mac",
     requirements: "macOS 12.0 Monterey or newer (Apple Silicon M1/M2/M3/M4 & Intel)",
-    sha512: "Available upon release via GitHub Releases",
+    sha512: "Automated direct download from official build server",
   },
   {
     id: "linux",
@@ -50,7 +50,7 @@ const PLATFORMS: PlatformInfo[] = [
     size: "185 MB",
     downloadUrl: "/api/download?platform=linux",
     requirements: "Ubuntu 20.04+, Debian, Fedora, Arch Linux (64-bit)",
-    sha512: "Available upon release via GitHub Releases",
+    sha512: "Automated direct download from official build server",
   },
 ];
 
@@ -154,20 +154,10 @@ export function DownloadSection() {
             <a
               href={active.downloadUrl}
               onClick={() => handleDownload(active)}
-              className="flex items-center justify-center gap-3 px-6 sm:px-8 py-3.5 sm:py-4 rounded-2xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-400 hover:to-violet-500 shadow-xl shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-400 hover:to-violet-500 shadow-xl shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <Icon name="download" size={19} />
-              <span>Download for {active.name} ({active.size})</span>
-            </a>
-
-            <a
-              href="https://github.com/princeshiamofficial/Recordly/releases"
-              target="_blank"
-              rel="noreferrer"
-              className="flex items-center justify-center gap-2 px-5 py-3.5 rounded-2xl font-semibold text-xs sm:text-sm text-slate-300 bg-slate-800/80 hover:bg-slate-750 border border-slate-700 hover:border-slate-600 transition-all"
-            >
-              <span>GitHub Releases</span>
-              <Icon name="arrow-right" size={14} />
+              <span>Direct Download for {active.name} ({active.size})</span>
             </a>
           </div>
 
