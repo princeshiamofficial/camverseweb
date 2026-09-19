@@ -109,7 +109,9 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    void checkAuth();
+    queueMicrotask(() => {
+      void checkAuth();
+    });
   }, [checkAuth]);
 
   // Fetch tracking settings (Facebook Pixel & GTM)
@@ -258,7 +260,9 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (isAuthenticated) {
-      void loadDashboardData();
+      queueMicrotask(() => {
+        void loadDashboardData();
+      });
     }
   }, [isAuthenticated, loadDashboardData]);
 
@@ -520,7 +524,7 @@ export default function AdminPage() {
   // ─────────────────────────────────────────────────────────────
   if (!isAuthenticated) {
     return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-slate-50 via-white to-slate-100 px-4 text-slate-800">
+      <main className="flex min-h-screen flex-col items-center justify-center bg-linear-to-b from-slate-50 via-white to-slate-100 px-4 text-slate-800">
         <div className="w-full max-w-md">
           <div className="rounded-3xl border border-slate-200/90 bg-white p-8 sm:p-10 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
             <div className="flex flex-col items-center text-center">
@@ -1065,7 +1069,7 @@ export default function AdminPage() {
                             {/* Customer Avatar & Details */}
                             <td className="py-3.5 px-6">
                               <div className="flex items-center gap-3">
-                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-slate-100 border border-slate-200/80 text-indigo-700 font-bold text-xs tracking-wider shadow-2xs">
+                                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-indigo-50 to-slate-100 border border-slate-200/80 text-indigo-700 font-bold text-xs tracking-wider shadow-2xs">
                                   {getInitials(lic.customer_name, lic.customer_email)}
                                 </div>
                                 <div className="min-w-0">
@@ -1282,7 +1286,7 @@ export default function AdminPage() {
                         <tr key={lic.id} className="group hover:bg-slate-50/70 transition-colors">
                           <td className="px-5 py-3.5">
                             <div className="flex items-center gap-3">
-                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-50 to-slate-100 border border-slate-200/80 text-indigo-700 font-bold text-xs tracking-wider shadow-2xs">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-linear-to-br from-indigo-50 to-slate-100 border border-slate-200/80 text-indigo-700 font-bold text-xs tracking-wider shadow-2xs">
                                 {getInitials(lic.customer_name, lic.customer_email)}
                               </div>
                               <div className="min-w-0">
@@ -1512,7 +1516,7 @@ export default function AdminPage() {
                         onChange={(e) => setFbPixelEnabled(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600" />
                     </label>
                   </div>
 
@@ -1577,7 +1581,7 @@ export default function AdminPage() {
                         onChange={(e) => setGtmEnabled(e.target.checked)}
                         className="sr-only peer"
                       />
-                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600" />
+                      <div className="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-amber-600" />
                     </label>
                   </div>
 
@@ -1951,7 +1955,7 @@ export default function AdminPage() {
                 </label>
                 <select
                   value={newExpiryType}
-                  onChange={(e) => setNewExpiryType(e.target.value as any)}
+                  onChange={(e) => setNewExpiryType(e.target.value as "lifetime" | "30days" | "1year" | "custom")}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-slate-900 outline-none cursor-pointer"
                 >
                   <option value="lifetime">Lifetime (No expiration)</option>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { Icon } from "./icons";
 import { track } from "@/lib/analytics";
 
@@ -54,22 +54,24 @@ const PLATFORMS: PlatformInfo[] = [
   },
 ];
 
+const subscribeNoop = () => () => {};
+
 export function DownloadSection() {
-  const [selectedPlatform, setSelectedPlatform] = useState<"windows" | "mac" | "linux">("windows");
+  const detectedPlatform = useSyncExternalStore(
+    subscribeNoop,
+    () => {
+      const ua = navigator.userAgent.toLowerCase();
+      if (ua.includes("mac")) return "mac";
+      if (ua.includes("linux")) return "linux";
+      return "windows";
+    },
+    () => "windows"
+  );
+  const [userPlatform, setUserPlatform] = useState<"windows" | "mac" | "linux" | null>(null);
+  const selectedPlatform = userPlatform ?? detectedPlatform;
+  const setSelectedPlatform = setUserPlatform;
   const [showChecksum, setShowChecksum] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    // Basic OS detection
-    const ua = window.navigator.userAgent.toLowerCase();
-    if (ua.includes("mac")) {
-      setSelectedPlatform("mac");
-    } else if (ua.includes("linux")) {
-      setSelectedPlatform("linux");
-    } else {
-      setSelectedPlatform("windows");
-    }
-  }, []);
 
   const active = PLATFORMS.find((p) => p.id === selectedPlatform) || PLATFORMS[0];
 
@@ -88,8 +90,8 @@ export function DownloadSection() {
   return (
     <section id="download" className="relative w-full overflow-hidden bg-slate-900 py-16 text-white sm:py-28 scroll-mt-24">
       {/* Background Glows */}
-      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-[700px] h-[500px] bg-indigo-600/20 blur-[150px] rounded-full" />
-      <div className="pointer-events-none absolute bottom-0 right-1/4 w-[400px] h-[400px] bg-violet-600/15 blur-[120px] rounded-full" />
+      <div className="pointer-events-none absolute -top-40 left-1/2 -translate-x-1/2 w-175 h-125 bg-indigo-600/20 blur-[150px] rounded-full" />
+      <div className="pointer-events-none absolute bottom-0 right-1/4 w-100 h-100 bg-violet-600/15 blur-[120px] rounded-full" />
 
       <div className="container-page relative z-10 text-center">
         {/* Eyebrow Tag */}
@@ -154,7 +156,7 @@ export function DownloadSection() {
             <a
               href={active.downloadUrl}
               onClick={() => handleDownload(active)}
-              className="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-sm sm:text-base text-white bg-gradient-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-400 hover:to-violet-500 shadow-xl shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
+              className="flex items-center justify-center gap-3 px-8 py-4 rounded-2xl font-bold text-sm sm:text-base text-white bg-linear-to-r from-indigo-500 via-indigo-600 to-violet-600 hover:from-indigo-400 hover:to-violet-500 shadow-xl shadow-indigo-600/30 hover:scale-[1.02] active:scale-[0.98] transition-all"
             >
               <Icon name="download" size={19} />
               <span>Direct Download for {active.name} ({active.size})</span>

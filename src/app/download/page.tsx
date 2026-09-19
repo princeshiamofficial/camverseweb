@@ -1,11 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { Navbar } from "@/components/navbar";
 import { Footer } from "@/components/footer";
-import { Icon, Logo } from "@/components/icons";
+import { Icon } from "@/components/icons";
 import { CheckoutProvider } from "@/components/checkout-context";
+
+const subscribeNoop = () => () => {};
+
+function getPlatformSnapshot(): "windows" | "mac" | "linux" {
+  const ua = navigator.userAgent.toLowerCase();
+  if (ua.includes("mac")) return "mac";
+  if (ua.includes("linux")) return "linux";
+  return "windows";
+}
 
 export default function DownloadPage() {
   return (
@@ -16,17 +25,11 @@ export default function DownloadPage() {
 }
 
 function DownloadContent() {
-  const [platform, setPlatform] = useState<"windows" | "mac" | "linux">("windows");
+  const platform = useSyncExternalStore(subscribeNoop, getPlatformSnapshot, () => "windows");
   const [countdown, setCountdown] = useState(3);
   const [downloadStarted, setDownloadStarted] = useState(false);
 
   useEffect(() => {
-    const ua = window.navigator.userAgent.toLowerCase();
-    let detected: "windows" | "mac" | "linux" = "windows";
-    if (ua.includes("mac")) detected = "mac";
-    else if (ua.includes("linux")) detected = "linux";
-    setPlatform(detected);
-
     // Auto-trigger download after countdown
     const timer = setInterval(() => {
       setCountdown((prev) => {
@@ -34,7 +37,11 @@ function DownloadContent() {
           clearInterval(timer);
           setDownloadStarted(true);
           // Trigger file download
-          window.location.href = `/api/download?platform=${detected}`;
+          const link = document.createElement("a");
+          link.href = `/api/download?platform=${platform}`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
           return 0;
         }
         return prev - 1;
@@ -42,7 +49,7 @@ function DownloadContent() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, []);
+  }, [platform]);
 
   return (
     <div className="flex min-h-screen flex-col bg-slate-50 text-slate-900">
