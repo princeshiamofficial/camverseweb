@@ -26,15 +26,19 @@ export async function GET(request: Request) {
 
   if (fs.existsSync(localFilePath)) {
     try {
-      const fileBuffer = fs.readFileSync(localFilePath);
-      return new NextResponse(fileBuffer, {
-        status: 200,
-        headers: {
-          "Content-Type": "application/octet-stream",
-          "Content-Disposition": `attachment; filename="${directFilename}"`,
-          "Cache-Control": "public, max-age=3600",
-        },
-      });
+      const stats = fs.statSync(localFilePath);
+      // Ensure file is a real complete binary (>5MB) and not a Git LFS pointer text file (~134 bytes)
+      if (stats.size > 5_000_000) {
+        const fileBuffer = fs.readFileSync(localFilePath);
+        return new NextResponse(fileBuffer, {
+          status: 200,
+          headers: {
+            "Content-Type": "application/octet-stream",
+            "Content-Disposition": `attachment; filename="${directFilename}"`,
+            "Cache-Control": "public, max-age=3600",
+          },
+        });
+      }
     } catch (err) {
       console.error("[download-route] Error reading local file:", err);
     }

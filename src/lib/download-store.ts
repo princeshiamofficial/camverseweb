@@ -13,10 +13,10 @@ export interface DownloadConfig {
 const CONFIG_PATH = path.join(process.cwd(), "src", "data", "download-config.json");
 
 const DEFAULT_CONFIG: DownloadConfig = {
-  version: "1.3.5",
+  version: "1.3.5-beta.3",
   windowsUrl:
     process.env.WINDOWS_DOWNLOAD_URL ||
-    "https://github.com/princeshiamofficial/Recordly/releases/download/v1.3.5-beta.2/CamVerse-windows-x64.exe",
+    "https://github.com/princeshiamofficial/Recordly/releases/download/v1.3.5-beta.3/CamVerse-windows-x64.exe",
   macUrl:
     process.env.MAC_DOWNLOAD_URL ||
     "https://github.com/princeshiamofficial/Recordly/releases/download/v1.3.5-beta.2/CamVerse-mac-universal.dmg",
