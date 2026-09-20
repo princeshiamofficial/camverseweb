@@ -8,7 +8,7 @@ export async function GET() {
     return NextResponse.json({ ok: false, error: "Unauthorized." }, { status: 401 });
   }
 
-  const config = getTrackingConfig();
+  const config = await getTrackingConfig();
   return NextResponse.json({ ok: true, config });
 }
 
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { gtmId, gtmEnabled, fbPixelId, fbPixelEnabled } = body || {};
 
-    const updated = saveTrackingConfig({
+    const updated = await saveTrackingConfig({
       gtmId: typeof gtmId === "string" ? gtmId : undefined,
       gtmEnabled: typeof gtmEnabled === "boolean" ? gtmEnabled : undefined,
       fbPixelId: typeof fbPixelId === "string" ? fbPixelId : undefined,

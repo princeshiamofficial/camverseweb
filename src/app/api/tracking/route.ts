@@ -4,7 +4,7 @@ import { getTrackingConfig } from "@/lib/tracking-store";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const config = getTrackingConfig();
+  const config = await getTrackingConfig();
   return NextResponse.json({
     ok: true,
     gtmId: config.gtmEnabled ? config.gtmId : "",
